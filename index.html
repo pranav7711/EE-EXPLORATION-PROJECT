@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VisionCheck</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #05080f;
+    --surface: #0c1220;
+    --surface2: #111827;
+    --accent: #00e5c3;
+    --accent2: #38bdf8;
+    --text: #f0f4f8;
+    --muted: #8899aa;
+    --border: rgba(0,229,195,0.15);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 3rem;
+    background: rgba(5,8,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--text); }
+
+  nav ul {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  nav ul a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  nav ul a:hover { color: var(--accent); }
+
+  .nav-btn {
+    background: var(--accent);
+    color: #05080f;
+    border: none;
+    padding: 0.5rem 1.4rem;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .nav-btn:hover { opacity: 0.85; }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8rem 3rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,195,0.08) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+    max-width: 1100px;
+    width: 100%;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0,229,195,0.08);
+    border: 0.5px solid rgba(0,229,195,0.3);
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 3.8rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 .accent { color: var(--accent); }
+
+  .hero-desc {
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    max-width: 440px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #05080f;
+    border: none;
+    padding: 0.85rem 2rem;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 0.5px solid rgba(255,255,255,0.2);
+    padding: 0.85rem 2rem;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  .eye-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .eye-ring {
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,229,195,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    animation: rotate 20s linear infinite;
+  }
+
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .eye-ring::before {
+    content: '';
+    position: absolute;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    top: -4px; left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .eye-ring-inner {
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    border: 0.5px solid rgba(0,229,195,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: rotate 12s linear infinite reverse;
+  }
+
+  .eye-center {
+    animation: rotate 20s linear infinite;
+  }
+
+  .stat-chips {
+    position: absolute;
+    width: 100%; height: 100%;
+    top: 0; left: 0;
+  }
+
+  .chip {
+    position: absolute;
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .chip-val {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent);
+    display: block;
+  }
+
+  .chip-label { color: var(--muted); }
+
+  .chip:nth-child(1) { top: 0; right: -20px; }
+  .chip:nth-child(2) { bottom: 20px; right: -10px; }
+  .chip:nth-child(3) { bottom: 0; left: -30px; }
+
+  section { padding: 6rem 3rem; }
+
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 3.5rem;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .feature-card:hover {
+    border-color: rgba(0,229,195,0.4);
+    transform: translateY(-4px);
+  }
+
+  .feature-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: rgba(0,229,195,0.08);
+    border: 0.5px solid rgba(0,229,195,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+  }
+
+  .feature-icon svg { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 1.5; }
+
+  .feature-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .feature-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+  .how-it-works { background: var(--surface); }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-top: 3.5rem;
+    position: relative;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 28px; left: 12%;
+    width: 76%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,229,195,0.3), rgba(56,189,248,0.3), transparent);
+  }
+
+  .step { text-align: center; }
+
+  .step-num {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.2rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  .step h4 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    font-size: 1rem;
+  }
+
+  .step p { color: var(--muted); font-size: 0.85rem; }
+
+  .tests-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-top: 3.5rem;
+  }
+
+  .test-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+
+  .test-card:hover {
+    border-color: rgba(56,189,248,0.5);
+    background: rgba(56,189,248,0.04);
+    transform: translateX(4px);
+  }
+
+  .test-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 2.5rem;
+    color: rgba(0,229,195,0.15);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .test-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .test-card p { color: var(--muted); font-size: 0.875rem; line-height: 1.6; }
+
+  .test-tag {
+    display: inline-block;
+    background: rgba(56,189,248,0.1);
+    color: var(--accent2);
+    border-radius: 50px;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    margin-top: 0.6rem;
+  }
+
+  .cta-section {
+    text-align: center;
+    padding: 6rem 3rem;
+  }
+
+  .cta-box {
+    max-width: 700px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 28px;
+    padding: 4rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-box::before {
+    content: '';
+    position: absolute;
+    width: 400px; height: 200px;
+    background: radial-gradient(ellipse, rgba(0,229,195,0.07) 0%, transparent 70%);
+    bottom: -50px; left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .cta-box h2 { margin-bottom: 1rem; }
+  .cta-box p { color: var(--muted); margin-bottom: 2rem; }
+
+  footer {
+    border-top: 0.5px solid rgba(255,255,255,0.05);
+    padding: 2rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up { animation: fadeUp 0.8s ease forwards; }
+  .delay-1 { animation-delay: 0.15s; opacity: 0; }
+  .delay-2 { animation-delay: 0.3s; opacity: 0; }
+  .delay-3 { animation-delay: 0.45s; opacity: 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Vision<span>Check</span></div>
+  <ul>
+    <li><a href="#tests">Tests</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+  <button class="nav-btn">Start Free Test</button>
+</nav>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="badge fade-up"><span class="badge-dot"></span> AI-Powered Eye Health</div>
+      <h1 class="fade-up delay-1">Know your<br><span class="accent">vision.</span><br>Protect it.</h1>
+      <p class="hero-desc fade-up delay-2">Free, instant eye health tests from your browser. Check your visual acuity, color vision, and more — then get personalized AI advice in seconds.</p>
+      <div class="hero-actions fade-up delay-3">
+        <a href="#tests" class="btn-primary">Start Eye Check</a>
+        <a href="#how" class="btn-outline">How it works</a>
+      </div>
+    </div>
+    <div class="eye-visual fade-up delay-2">
+      <div class="stat-chips">
+        <div class="chip">
+          <span class="chip-val">20/20</span>
+          <span class="chip-label">Vision Score</span>
+        </div>
+        <div class="chip">
+          <span class="chip-val">AI</span>
+          <span class="chip-label">Powered Tips</span>
+        </div>
+        <div class="chip">
+          <span class="chip-val">4</span>
+          <span class="chip-label">Tests Available</span>
+        </div>
+      </div>
+      <div class="eye-ring">
+        <div class="eye-ring-inner">
+          <div class="eye-center">
+            <svg width="120" height="80" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 40C10 40 30 10 60 10C90 10 110 40 110 40C110 40 90 70 60 70C30 70 10 40 10 40Z" stroke="#00e5c3" stroke-width="1.5" fill="none"/>
+              <circle cx="60" cy="40" r="18" stroke="#38bdf8" stroke-width="1.5" fill="rgba(0,229,195,0.05)"/>
+              <circle cx="60" cy="40" r="8" fill="#00e5c3" opacity="0.9"/>
+              <circle cx="56" cy="36" r="2.5" fill="rgba(255,255,255,0.6)"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-inner">
+    <div class="section-label">Why VisionCheck</div>
+    <h2>Eye care, simplified<br>for everyone.</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <h3>Takes under 3 minutes</h3>
+        <p>Complete all four vision tests in one sitting. No appointments, no waiting rooms, no cost.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3>AI-powered insights</h3>
+        <p>After each test, our AI analyzes your results and gives you clear, personalized eye health advice.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <h3>Works in any browser</h3>
+        <p>No app download needed. Works on your phone, laptop, or tablet — anytime, anywhere.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how-it-works" id="how">
+  <div class="section-inner">
+    <div class="section-label">Process</div>
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h4>Pick a test</h4>
+        <p>Choose from 4 different vision and eye health tests</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h4>Follow instructions</h4>
+        <p>Simple step-by-step guided experience — no prior knowledge needed</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h4>Get your score</h4>
+        <p>Instantly see your results with a detailed visual breakdown</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h4>AI advice</h4>
+        <p>Personalized tips from our AI based on your specific results</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tests">
+  <div class="section-inner">
+    <div class="section-label">Available Tests</div>
+    <h2>Four tests,<br>complete eye picture.</h2>
+    <div class="tests-grid">
+      <div class="test-card">
+        <div class="test-num">01</div>
+        <div>
+          <h3>Visual Acuity</h3>
+          <p>Read letters at varying sizes to measure the sharpness of your distance vision — like a standard eye chart test.</p>
+          <span class="test-tag">5 min</span>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="test-num">02</div>
+        <div>
+          <h3>Color Blindness</h3>
+          <p>Identify numbers and shapes hidden in Ishihara-style dot patterns to detect red-green or blue-yellow color deficiencies.</p>
+          <span class="test-tag">3 min</span>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="test-num">03</div>
+        <div>
+          <h3>Astigmatism</h3>
+          <p>Analyze line clarity and focus patterns to detect irregular curvature of the eye lens or cornea.</p>
+          <span class="test-tag">2 min</span>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="test-num">04</div>
+        <div>
+          <h3>Eye Strain Quiz</h3>
+          <p>Answer questions about your screen habits and lifestyle to assess your digital eye strain risk score.</p>
+          <span class="test-tag">2 min</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="about">
+  <div class="cta-box">
+    <div class="badge" style="margin: 0 auto 1.5rem; width: fit-content;"><span class="badge-dot"></span> Free — No signup needed</div>
+    <h2>Ready to check<br>your vision?</h2>
+    <p>Takes less than 10 minutes. Built for students, by students.</p>
+    <a href="#tests" class="btn-primary">Begin Eye Check →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="logo" style="font-size: 1rem;">Vision<span>Check</span></div>
+  <span>Engineering Exploration Project · 2024</span>
+  <span>Built with AI + Care</span>
+</footer>
+
+</body>
+</html>
