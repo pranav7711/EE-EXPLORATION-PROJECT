@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color Vision Test — VisionCheck</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent: #00e5c3;
+      --accent-dim: rgba(0,229,195,0.12);
+      --accent-glow: rgba(0,229,195,0.35);
+      --bg: #05080f; --bg2: #0b1120; --bg3: #111827;
+      --text: #f0f4f8; --text-dim: #8898aa;
+      --border: rgba(255,255,255,0.07); --radius: 16px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:18px 40px; background:rgba(5,8,15,0.85); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.25rem; color:var(--text); text-decoration:none; }
+    .logo span { color:var(--accent); }
+    .nav-links { display:flex; gap:8px; }
+    .nav-links a { color:var(--text-dim); text-decoration:none; font-size:0.875rem; padding:6px 14px; border-radius:8px; transition:all 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color:var(--accent); background:var(--accent-dim); }
+    .page { padding-top:100px; padding-bottom:60px; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+    .test-header { text-align:center; margin-bottom:40px; animation:fadeUp 0.6s ease both; }
+    .badge { display:inline-flex; align-items:center; gap:6px; background:var(--accent-dim); border:1px solid var(--accent-glow); color:var(--accent); font-size:0.75rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; padding:6px 14px; border-radius:100px; margin-bottom:18px; }
+    .test-header h1 { font-family:'Syne',sans-serif; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; letter-spacing:-1px; margin-bottom:12px; }
+    .test-header p { color:var(--text-dim); max-width:480px; margin:0 auto; line-height:1.6; }
+    .progress-wrap { width:100%; max-width:560px; margin-bottom:32px; }
+    .progress-info { display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-dim); margin-bottom:8px; }
+    .progress-info span:last-child { color:var(--accent); font-weight:500; }
+    .progress-bar-bg { height:4px; background:var(--bg3); border-radius:100px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:var(--accent); border-radius:100px; transition:width 0.4s; box-shadow:0 0 12px var(--accent-glow); }
+    .instruction-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:24px 32px; max-width:560px; width:100%; margin-bottom:28px; display:flex; align-items:flex-start; gap:14px; }
+    .instruction-icon { width:36px; height:36px; border-radius:10px; background:var(--accent-dim); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .instruction-card p { font-size:0.9rem; color:var(--text-dim); line-height:1.65; }
+    .instruction-card p strong { color:var(--text); }
+    .test-card { background:var(--bg2); border:1px solid var(--border); border-radius:24px; padding:36px; max-width:560px; width:100%; display:flex; flex-direction:column; align-items:center; gap:28px; }
+    .question-label { font-size:0.78rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; align-self:flex-start; }
+    .plate-wrap { width:280px; height:280px; transition:opacity 0.2s, transform 0.2s; }
+    .plate-wrap.switching { opacity:0; transform:scale(0.92); }
+    #plate-canvas { border-radius:50%; display:block; box-shadow:0 0 0 4px var(--border), 0 20px 60px rgba(0,0,0,0.5); }
+    .input-group { width:100%; display:flex; flex-direction:column; gap:10px; }
+    .input-group label { font-size:0.85rem; color:var(--text-dim); }
+    .input-row { display:flex; gap:10px; }
+    #answer-input { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:14px 18px; color:var(--text); font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:700; text-align:center; outline:none; transition:border-color 0.2s, box-shadow 0.2s; }
+    #answer-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim); }
+    #answer-input::placeholder { color:var(--text-dim); font-weight:400; font-size:0.95rem; }
+    .cant-see-btn { width:100%; background:transparent; border:1px dashed rgba(255,255,255,0.15); border-radius:10px; padding:10px; color:var(--text-dim); font-family:'DM Sans',sans-serif; font-size:0.85rem; cursor:pointer; transition:all 0.2s; }
+    .cant-see-btn:hover { border-color:rgba(255,255,255,0.3); color:var(--text); }
+    .submit-btn { background:var(--accent); color:#000; border:none; border-radius:12px; padding:14px 28px; font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s; white-space:nowrap; flex-shrink:0; }
+    .submit-btn:hover { transform:translateY(-1px); box-shadow:0 6px 24px var(--accent-glow); }
+    .feedback { font-size:0.85rem; font-weight:500; opacity:0; transition:opacity 0.3s; min-height:20px; }
+    .feedback.show { opacity:1; }
+    .feedback.correct { color:var(--accent); }
+    .feedback.wrong { color:#ff6b6b; }
+    #results-view { display:none; flex-direction:column; align-items:center; gap:24px; max-width:560px; width:100%; }
+    .result-banner { width:100%; background:var(--bg2); border:1px solid var(--border); border-radius:24px; padding:36px; text-align:center; }
+    .result-icon { font-size:3rem; margin-bottom:16px; }
+    .result-banner h2 { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; margin-bottom:8px; }
+    .result-banner p { color:var(--text-dim); line-height:1.6; }
+    .result-status { display:inline-block; padding:6px 18px; border-radius:100px; font-size:0.85rem; font-weight:600; margin:16px 0 8px; }
+    .status-normal { background:rgba(0,229,195,0.15); color:var(--accent); border:1px solid var(--accent-glow); }
+    .status-mild { background:rgba(255,193,7,0.15); color:#ffc107; border:1px solid rgba(255,193,7,0.4); }
+    .status-significant { background:rgba(255,107,107,0.15); color:#ff6b6b; border:1px solid rgba(255,107,107,0.4); }
+    .score-row { display:flex; justify-content:center; gap:20px; margin-top:20px; }
+    .score-chip { background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:14px 20px; text-align:center; }
+    .score-chip .val { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; color:var(--accent); display:block; }
+    .score-chip .lbl { font-size:0.75rem; color:var(--text-dim); margin-top:2px; display:block; }
+    .action-row { display:flex; gap:12px; width:100%; }
+    .btn-secondary { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:14px; color:var(--text); font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; text-decoration:none; text-align:center; transition:all 0.2s; }
+    .btn-primary { flex:1; background:var(--accent); border:none; border-radius:12px; padding:14px; color:#000; font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; text-decoration:none; text-align:center; transition:all 0.2s; }
+    .btn-primary:hover { box-shadow:0 6px 24px var(--accent-glow); transform:translateY(-1px); }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @media (max-width:600px) { nav { padding:14px 20px; } .nav-links { display:none; } .test-card { padding:24px 20px; } .plate-wrap, #plate-canvas { width:220px; height:220px; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Vision<span>Check</span></a>
+  <div class="nav-links">
+    <a href="acuity.html">Acuity</a>
+    <a href="color.html" class="active">Color</a>
+    <a href="astigmatism.html">Astigmatism</a>
+    <a href="quiz.html">Eye Strain</a>
+    <a href="results.html">Results</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="test-header">
+    <div class="badge">🎨 Test 2 of 4</div>
+    <h1>Color Vision Test</h1>
+    <p>Identify the number hidden in each plate. Takes about 2 minutes.</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-info">
+      <span id="progress-label">Plate 1 of 6</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="instruction-card" id="instruction-card">
+    <div class="instruction-icon">👁️</div>
+    <p>Look at each circular plate and type the <strong>number you see</strong> in the dots. If you cannot see any number, click the button below. Be honest for accurate results.</p>
+  </div>
+
+  <div class="test-card" id="test-card">
+    <span class="question-label" id="question-label">Plate 1 — Demonstration</span>
+    <div class="plate-wrap" id="plate-wrap">
+      <canvas id="plate-canvas" width="280" height="280"></canvas>
+    </div>
+    <div class="input-group">
+      <label for="answer-input">Type the number you see:</label>
+      <div class="input-row">
+        <input type="text" id="answer-input" placeholder="e.g. 12" maxlength="3" autocomplete="off" />
+        <button class="submit-btn" id="submit-btn">Next →</button>
+      </div>
+      <button class="cant-see-btn" id="cant-see-btn">I can't see any number</button>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </div>
+
+  <div id="results-view">
+    <div class="result-banner">
+      <div class="result-icon" id="result-icon">👁️</div>
+      <h2 id="result-heading">Test Complete</h2>
+      <div id="result-status-badge"></div>
+      <p id="result-message"></p>
+      <div class="score-row">
+        <div class="score-chip"><span class="val" id="score-correct">0</span><span class="lbl">Correct</span></div>
+        <div class="score-chip"><span class="val" id="score-wrong">0</span><span class="lbl">Missed</span></div>
+        <div class="score-chip"><span class="val" id="score-pct">0%</span><span class="lbl">Accuracy</span></div>
+      </div>
+    </div>
+    <div class="action-row">
+      <a href="acuity.html" class="btn-secondary">← Retake Acuity</a>
+      <a href="astigmatism.html" class="btn-primary">Next Test →</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const PLATES = [
+    { answer:'12', bgHue:30,  fgHue:100, label:'Plate 1 — Demonstration'    },
+    { answer:'8',  bgHue:355, fgHue:100, label:'Plate 2 — Red/Green Check'   },
+    { answer:'6',  bgHue:120, fgHue:0,   label:'Plate 3 — Red/Green Check'   },
+    { answer:'29', bgHue:200, fgHue:50,  label:'Plate 4 — Blue/Yellow Check'  },
+    { answer:'57', bgHue:30,  fgHue:200, label:'Plate 5 — Demonstration'     },
+    { answer:'5',  bgHue:0,   fgHue:130, label:'Plate 6 — Red/Green Check'   },
+  ];
+
+  let currentPlate = 0, correctCount = 0, userAnswers = [];
+
+  function rng32(seed) {
+    let s = seed >>> 0;
+    return () => { s += 0x6D2B79F5; let t = Math.imul(s^(s>>>15),1|s); t ^= t+Math.imul(t^(t>>>7),61|t); return ((t^(t>>>14))>>>0)/4294967296; };
+  }
+
+  const DM = {
+    '0':['0111100','1000010','1000110','1001010','1010010','1100010','0111100'],
+    '1':['0010000','0110000','0010000','0010000','0010000','0010000','0111000'],
+    '2':['0111100','1000010','0000010','0001100','0110000','1000000','1111110'],
+    '3':['0111100','1000010','0000010','0011100','0000010','1000010','0111100'],
+    '4':['0001000','0011000','0101000','1001000','1111110','0001000','0001000'],
+    '5':['1111110','1000000','1111100','0000010','0000010','1000010','0111100'],
+    '6':['0111100','1000000','1000000','1111100','1000010','1000010','0111100'],
+    '7':['1111110','0000010','0000100','0001000','0010000','0010000','0010000'],
+    '8':['0111100','1000010','1000010','0111100','1000010','1000010','0111100'],
+    '9':['0111100','1000010','1000010','0111110','0000010','0000010','0111100'],
+  };
+
+  function getDigitDots(numStr, cx, cy, size) {
+    const digits = numStr.split('');
+    const sp = size / (digits.length * 7 + (digits.length-1) * 1.5);
+    const cw = 7*sp, gap = sp*1.5, tw = digits.length*cw+(digits.length-1)*gap;
+    const sx = cx-tw/2, sy = cy-(7*sp)/2;
+    const pts = [];
+    digits.forEach((d, di) => {
+      const map = DM[d]||DM['0'], ox = sx+di*(cw+gap);
+      for (let r=0;r<map.length;r++) for (let c=0;c<map[r].length;c++)
+        if (map[r][c]==='1') pts.push([ox+c*sp+sp/2, sy+r*sp+sp/2]);
+    });
+    return pts;
+  }
+
+  function drawPlate(canvas, p) {
+    const ctx = canvas.getContext('2d');
+    const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2, R=W/2;
+    const bg=rng32(p.bgHue*17+p.fgHue+42), fg=rng32(p.fgHue*31+p.bgHue+99), dr=W*0.048;
+    ctx.clearRect(0,0,W,H);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,R-2,0,Math.PI*2); ctx.clip();
+    ctx.fillStyle=`hsl(${p.bgHue},15%,20%)`; ctx.fillRect(0,0,W,H);
+    const placed=[];
+    for (let i=0;i<600;i++) {
+      const x=bg()*W, y=bg()*H;
+      if (Math.hypot(x-cx,y-cy)+dr>R-4) continue;
+      let ok=true;
+      for (const d of placed) if (Math.hypot(x-d[0],y-d[1])<dr*1.2) {ok=false;break;}
+      if (!ok) continue;
+      const r2=dr*(0.5+bg()*0.9), hue=p.bgHue+(bg()-0.5)*45, sat=48+bg()*28, lit=35+bg()*30;
+      ctx.beginPath(); ctx.arc(x,y,r2,0,Math.PI*2); ctx.fillStyle=`hsl(${hue},${sat}%,${lit}%)`; ctx.fill();
+      placed.push([x,y]);
+    }
+    getDigitDots(p.answer,cx,cy,W*0.58).forEach(([nx,ny]) => {
+      const jx=nx+(fg()-0.5)*dr, jy=ny+(fg()-0.5)*dr, nr=dr*(0.6+fg()*0.7);
+      const hue=p.fgHue+(fg()-0.5)*30, sat=62+fg()*22, lit=44+fg()*22;
+      ctx.beginPath(); ctx.arc(jx,jy,nr,0,Math.PI*2); ctx.fillStyle=`hsl(${hue},${sat}%,${lit}%)`; ctx.fill();
+    });
+    ctx.restore();
+    ctx.beginPath(); ctx.arc(cx,cy,R-3,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=3; ctx.stroke();
+  }
+
+  const canvas=document.getElementById('plate-canvas'), plateWrap=document.getElementById('plate-wrap');
+  const pfill=document.getElementById('progress-fill'), plbl=document.getElementById('progress-label');
+  const ppct=document.getElementById('progress-pct'), input=document.getElementById('answer-input');
+  const feedback=document.getElementById('feedback'), qLabel=document.getElementById('question-label');
+
+  function loadPlate(i) {
+    const plate=PLATES[i], pct=Math.round((i/PLATES.length)*100);
+    qLabel.textContent=plate.label; pfill.style.width=pct+'%';
+    plbl.textContent=`Plate ${i+1} of ${PLATES.length}`; ppct.textContent=pct+'%';
+    plateWrap.classList.add('switching');
+    setTimeout(()=>{ drawPlate(canvas,plate); plateWrap.classList.remove('switching'); input.value=''; feedback.className='feedback'; input.focus(); },220);
+  }
+
+  function submitAnswer(cantSee) {
+    const plate=PLATES[currentPlate], raw=cantSee?'':input.value.trim();
+    const right=raw.toUpperCase()===plate.answer.toUpperCase();
+    userAnswers.push({plate:currentPlate,userAnswer:raw,correct:right});
+    if (right) correctCount++;
+    feedback.textContent=right?'✓ Correct!':'✗ Incorrect';
+    feedback.className='feedback show '+(right?'correct':'wrong');
+    setTimeout(()=>{ currentPlate++; currentPlate<PLATES.length?loadPlate(currentPlate):showResults(); },650);
+  }
+
+  function showResults() {
+    pfill.style.width='100%'; ppct.textContent='100%';
+    document.getElementById('test-card').style.display='none';
+    document.getElementById('instruction-card').style.display='none';
+    const wrong=PLATES.length-correctCount, pct=Math.round((correctCount/PLATES.length)*100);
+    let status,cls,icon,heading,msg;
+    if (wrong===0) { status='No Color Blindness Detected';cls='status-normal';icon='✅';heading='Excellent Color Vision!';msg='You correctly identified all plates. Your color vision appears normal. This is a screening — see a specialist for a definitive result.'; }
+    else if (wrong<=2) { status='Possible Mild Color Deficiency';cls='status-mild';icon='⚠️';heading='Mild Deficiency Possible';msg=`You missed ${wrong} plate(s). This may indicate a mild color vision deficiency. We recommend consulting an eye specialist.`; }
+    else { status='Significant Color Blindness Detected';cls='status-significant';icon='🔴';heading='Color Vision Issue Detected';msg=`You missed ${wrong} plates. This suggests a color vision deficiency. Please visit an eye care professional.`; }
+    document.getElementById('result-icon').textContent=icon;
+    document.getElementById('result-heading').textContent=heading;
+    document.getElementById('result-message').textContent=msg;
+    document.getElementById('result-status-badge').innerHTML=`<span class="result-status ${cls}">${status}</span>`;
+    document.getElementById('score-correct').textContent=correctCount;
+    document.getElementById('score-wrong').textContent=wrong;
+    document.getElementById('score-pct').textContent=pct+'%';
+    localStorage.setItem('colorScore',JSON.stringify({status,correct:correctCount,wrong,pct,answers:userAnswers}));
+    document.getElementById('results-view').style.display='flex';
+  }
+
+  document.getElementById('submit-btn').addEventListener('click',()=>{ if(input.value.trim()) submitAnswer(false); });
+  document.getElementById('cant-see-btn').addEventListener('click',()=>submitAnswer(true));
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter'&&input.value.trim()) submitAnswer(false); });
+  loadPlate(0);
+</script>
+</body>
+</html>
