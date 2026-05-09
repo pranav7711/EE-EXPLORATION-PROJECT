@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eye Strain Quiz — VisionCheck</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent: #00e5c3;
+      --accent-dim: rgba(0,229,195,0.12);
+      --accent-glow: rgba(0,229,195,0.35);
+      --bg: #05080f; --bg2: #0b1120; --bg3: #111827;
+      --text: #f0f4f8; --text-dim: #8898aa;
+      --border: rgba(255,255,255,0.07); --radius: 16px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+    /* NAV */
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:18px 40px; background:rgba(5,8,15,0.85); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.25rem; color:var(--text); text-decoration:none; }
+    .logo span { color:var(--accent); }
+    .nav-links { display:flex; gap:8px; }
+    .nav-links a { color:var(--text-dim); text-decoration:none; font-size:0.875rem; padding:6px 14px; border-radius:8px; transition:all 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color:var(--accent); background:var(--accent-dim); }
+
+    /* LAYOUT */
+    .page { padding-top:100px; padding-bottom:60px; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+    /* HEADER */
+    .test-header { text-align:center; margin-bottom:40px; animation:fadeUp 0.6s ease both; }
+    .badge { display:inline-flex; align-items:center; gap:6px; background:var(--accent-dim); border:1px solid var(--accent-glow); color:var(--accent); font-size:0.75rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; padding:6px 14px; border-radius:100px; margin-bottom:18px; }
+    .test-header h1 { font-family:'Syne',sans-serif; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; letter-spacing:-1px; margin-bottom:12px; }
+    .test-header p { color:var(--text-dim); max-width:480px; margin:0 auto; line-height:1.6; }
+
+    /* PROGRESS */
+    .progress-wrap { width:100%; max-width:580px; margin-bottom:32px; }
+    .progress-info { display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-dim); margin-bottom:8px; }
+    .progress-info span:last-child { color:var(--accent); font-weight:500; }
+    .progress-bar-bg { height:4px; background:var(--bg3); border-radius:100px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:var(--accent); border-radius:100px; transition:width 0.5s cubic-bezier(.4,0,.2,1); box-shadow:0 0 12px var(--accent-glow); }
+
+    /* STEP DOTS */
+    .step-dots { display:flex; gap:8px; justify-content:center; margin-bottom:28px; }
+    .step-dot { width:28px; height:4px; border-radius:100px; background:var(--bg3); transition:all 0.3s; }
+    .step-dot.done { background:var(--accent); }
+    .step-dot.active { background:rgba(0,229,195,0.5); width:40px; }
+
+    /* QUIZ CARD */
+    .quiz-card { background:var(--bg2); border:1px solid var(--border); border-radius:24px; padding:40px; max-width:580px; width:100%; display:flex; flex-direction:column; gap:28px; animation:fadeUp 0.6s 0.1s ease both; }
+
+    /* QUESTION */
+    .question-meta { display:flex; align-items:center; gap:10px; }
+    .q-number { font-size:0.72rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); background:var(--accent-dim); padding:4px 10px; border-radius:6px; }
+    .q-category { font-size:0.72rem; color:var(--text-dim); letter-spacing:0.06em; text-transform:uppercase; }
+    .question-text { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:700; line-height:1.4; }
+
+    /* OPTIONS */
+    .options-list { display:flex; flex-direction:column; gap:10px; }
+    .option-btn {
+      background:var(--bg3); border:1.5px solid var(--border); border-radius:14px;
+      padding:16px 20px; cursor:pointer; transition:all 0.2s;
+      display:flex; align-items:center; gap:14px;
+      font-family:'DM Sans',sans-serif; text-align:left;
+    }
+    .option-btn:hover { border-color:rgba(0,229,195,0.35); background:rgba(0,229,195,0.04); }
+    .option-btn.selected { border-color:var(--accent); background:var(--accent-dim); }
+    .option-btn.selected .opt-radio { border-color:var(--accent); background:var(--accent); }
+    .option-btn.selected .opt-radio::after { opacity:1; }
+    .opt-radio {
+      width:18px; height:18px; border-radius:50%;
+      border:2px solid rgba(255,255,255,0.2); flex-shrink:0;
+      position:relative; transition:all 0.2s;
+    }
+    .opt-radio::after {
+      content:''; position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:7px; height:7px; border-radius:50%;
+      background:#000; opacity:0; transition:opacity 0.2s;
+    }
+    .opt-content { flex:1; }
+    .opt-label { font-size:0.9rem; font-weight:500; color:var(--text); display:block; }
+    .opt-pts { font-size:0.75rem; color:var(--text-dim); margin-top:2px; display:block; }
+    .opt-emoji { font-size:1.2rem; flex-shrink:0; }
+
+    /* NAV BUTTONS */
+    .btn-row { display:flex; gap:10px; }
+    .back-btn { background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:13px 22px; color:var(--text-dim); font-family:'Syne',sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .back-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.2); }
+    .next-btn { flex:1; background:var(--accent); border:none; border-radius:12px; padding:14px; color:#000; font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; transition:all 0.2s; opacity:0.35; pointer-events:none; }
+    .next-btn.active { opacity:1; pointer-events:all; }
+    .next-btn.active:hover { transform:translateY(-2px); box-shadow:0 8px 28px var(--accent-glow); }
+
+    /* SCORE PREVIEW */
+    .score-preview { display:flex; align-items:center; gap:10px; padding:12px 18px; background:var(--bg3); border-radius:12px; border:1px solid var(--border); }
+    .score-preview-label { font-size:0.78rem; color:var(--text-dim); }
+    .score-preview-val { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; color:var(--accent); margin-left:auto; }
+
+    /* RESULTS */
+    #results-view { display:none; flex-direction:column; align-items:center; gap:24px; max-width:580px; width:100%; animation:fadeUp 0.5s ease both; }
+
+    .result-banner { width:100%; background:var(--bg2); border:1px solid var(--border); border-radius:24px; padding:36px; text-align:center; }
+    .result-icon { font-size:3.5rem; margin-bottom:16px; }
+    .result-banner h2 { font-family:'Syne',sans-serif; font-size:1.7rem; font-weight:800; margin-bottom:10px; }
+    .result-banner > p { color:var(--text-dim); line-height:1.65; max-width:420px; margin:0 auto; }
+    .result-status { display:inline-block; padding:7px 22px; border-radius:100px; font-size:0.88rem; font-weight:700; margin:16px 0 12px; letter-spacing:0.03em; }
+    .status-low    { background:rgba(0,229,195,0.15); color:var(--accent); border:1px solid var(--accent-glow); }
+    .status-medium { background:rgba(255,193,7,0.15);  color:#ffc107; border:1px solid rgba(255,193,7,0.4); }
+    .status-high   { background:rgba(255,107,107,0.15); color:#ff6b6b; border:1px solid rgba(255,107,107,0.4); }
+
+    /* SCORE RING */
+    .score-ring-wrap { display:flex; flex-direction:column; align-items:center; gap:8px; margin:20px 0; }
+    .ring-svg { transform:rotate(-90deg); }
+    .ring-bg { fill:none; stroke:var(--bg3); stroke-width:10; }
+    .ring-fill { fill:none; stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1); }
+    .ring-text-wrap { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; pointer-events:none; }
+    .ring-outer { position:relative; width:120px; height:120px; }
+    .ring-score { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; }
+    .ring-max { font-size:0.75rem; color:var(--text-dim); }
+
+    /* TIPS SECTION */
+    .tips-card { width:100%; background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:28px; }
+    .tips-card h3 { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; margin-bottom:16px; color:var(--accent); }
+    .tip-item { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .tip-item:last-child { border-bottom:none; }
+    .tip-icon { font-size:1.1rem; flex-shrink:0; margin-top:1px; }
+    .tip-text { font-size:0.87rem; color:var(--text-dim); line-height:1.55; }
+    .tip-text strong { color:var(--text); }
+
+    /* ANSWER REVIEW */
+    .review-card { width:100%; background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:28px; }
+    .review-card h3 { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; margin-bottom:16px; }
+    .review-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); gap:12px; }
+    .review-row:last-child { border-bottom:none; }
+    .review-q { font-size:0.82rem; color:var(--text-dim); flex:1; }
+    .review-a { font-size:0.82rem; font-weight:600; color:var(--text); text-align:right; flex-shrink:0; }
+    .pts-chip { font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:6px; margin-left:8px; }
+    .pts-0 { background:rgba(0,229,195,0.15); color:var(--accent); }
+    .pts-1 { background:rgba(255,193,7,0.1); color:#ffc107; }
+    .pts-2 { background:rgba(255,140,0,0.12); color:#ff8c00; }
+    .pts-3 { background:rgba(255,107,107,0.15); color:#ff6b6b; }
+
+    .action-row { display:flex; gap:12px; width:100%; }
+    .btn-secondary { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:14px; color:var(--text); font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; text-decoration:none; text-align:center; transition:all 0.2s; }
+    .btn-secondary:hover { border-color:rgba(255,255,255,0.2); }
+    .btn-primary { flex:1; background:var(--accent); border:none; border-radius:12px; padding:14px; color:#000; font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; text-decoration:none; text-align:center; transition:all 0.2s; }
+    .btn-primary:hover { box-shadow:0 6px 24px var(--accent-glow); transform:translateY(-1px); }
+
+    /* TRANSITION */
+    .quiz-card.slide-out { animation:slideOut 0.2s ease forwards; }
+    .quiz-card.slide-in  { animation:slideIn  0.3s ease forwards; }
+
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes slideOut { from { opacity:1; transform:translateX(0);    } to { opacity:0; transform:translateX(-24px); } }
+    @keyframes slideIn  { from { opacity:0; transform:translateX(24px); } to { opacity:1; transform:translateX(0);    } }
+
+    @media (max-width:600px) {
+      nav { padding:14px 20px; }
+      .nav-links { display:none; }
+      .quiz-card { padding:24px 18px; }
+      .btn-row { flex-direction:column; }
+      .back-btn { order:2; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Vision<span>Check</span></a>
+  <div class="nav-links">
+    <a href="acuity.html">Acuity</a>
+    <a href="color.html">Color</a>
+    <a href="astigmatism.html">Astigmatism</a>
+    <a href="quiz.html" class="active">Eye Strain</a>
+    <a href="results.html">Results</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="test-header">
+    <div class="badge">📋 Test 4 of 4</div>
+    <h1>Eye Strain Quiz</h1>
+    <p>5 quick questions about your screen habits. Identifies your eye strain risk level.</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-info">
+      <span id="progress-label">Question 1 of 5</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="step-dots" id="step-dots"></div>
+
+  <!-- QUIZ CARD -->
+  <div class="quiz-card" id="quiz-card">
+
+    <div class="question-meta">
+      <span class="q-number" id="q-number">Q1</span>
+      <span class="q-category" id="q-category">Screen Time</span>
+    </div>
+
+    <p class="question-text" id="question-text">Loading...</p>
+
+    <div class="options-list" id="options-list"></div>
+
+    <div class="score-preview" id="score-preview" style="display:none">
+      <span class="score-preview-label">⚡ Running score</span>
+      <span class="score-preview-val" id="score-preview-val">0 / 15</span>
+    </div>
+
+    <div class="btn-row">
+      <button class="back-btn" id="back-btn" onclick="prevQuestion()">← Back</button>
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next →</button>
+    </div>
+
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-view">
+
+    <div class="result-banner">
+      <div class="result-icon" id="result-icon">📋</div>
+      <h2 id="result-heading">Quiz Complete</h2>
+      <div id="result-status-badge"></div>
+      <p id="result-message"></p>
+
+      <div class="score-ring-wrap">
+        <div class="ring-outer">
+          <svg class="ring-svg" width="120" height="120" viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="50"/>
+            <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="50"
+              stroke="#00e5c3"
+              stroke-dasharray="314"
+              stroke-dashoffset="314"/>
+          </svg>
+          <div class="ring-text-wrap">
+            <span class="ring-score" id="ring-score">0</span><br>
+            <span class="ring-max">/ 15</span>
+          </div>
+        </div>
+        <span style="font-size:0.8rem;color:var(--text-dim)">Risk Score (lower is better)</span>
+      </div>
+    </div>
+
+    <div class="tips-card" id="tips-card">
+      <h3>💡 Personalised Tips</h3>
+      <div id="tips-list"></div>
+    </div>
+
+    <div class="review-card">
+      <h3>Your Answers</h3>
+      <div id="review-list"></div>
+    </div>
+
+    <div class="action-row">
+      <a href="astigmatism.html" class="btn-secondary">← Retake Astigmatism</a>
+      <a href="results.html" class="btn-primary">View Full Results →</a>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  // ── Question bank ────────────────────────────────────────────────────────────
+  const QUESTIONS = [
+    {
+      id: 1,
+      category: 'Screen Time',
+      text: 'How many hours per day do you spend on screens (phone, laptop, TV combined)?',
+      options: [
+        { label: 'Less than 2 hours',  desc: 'Minimal screen exposure',        pts: 0, emoji: '😎' },
+        { label: '2 – 4 hours',        desc: 'Moderate — within healthy range', pts: 1, emoji: '🙂' },
+        { label: '4 – 6 hours',        desc: 'Above average exposure',          pts: 2, emoji: '😐' },
+        { label: '6+ hours',           desc: 'High daily screen exposure',      pts: 3, emoji: '😬' },
+      ]
+    },
+    {
+      id: 2,
+      category: 'Breaks',
+      text: 'Do you take a break every 20 minutes using the 20-20-20 rule? (Look 20 ft away for 20 sec)',
+      options: [
+        { label: 'Always',    desc: 'Great habit — eyes get regular rest', pts: 0, emoji: '✅' },
+        { label: 'Sometimes', desc: 'Inconsistent — could improve',        pts: 1, emoji: '🔄' },
+        { label: 'Rarely',    desc: 'Eyes are under extended strain',      pts: 2, emoji: '⚠️' },
+        { label: 'Never',     desc: 'No break habit — high strain risk',   pts: 3, emoji: '🚫' },
+      ]
+    },
+    {
+      id: 3,
+      category: 'Symptoms',
+      text: 'How often do you experience headaches or eye fatigue after using screens?',
+      options: [
+        { label: 'Never',     desc: 'No symptoms — good sign',           pts: 0, emoji: '💚' },
+        { label: 'Rarely',    desc: 'Occasional — likely not serious',   pts: 1, emoji: '🟡' },
+        { label: 'Sometimes', desc: 'Regular symptoms — worth noting',   pts: 2, emoji: '🟠' },
+        { label: 'Often',     desc: 'Frequent — consult an eye doctor',  pts: 3, emoji: '🔴' },
+      ]
+    },
+    {
+      id: 4,
+      category: 'Brightness',
+      text: 'How do you typically set your screen brightness?',
+      options: [
+        { label: 'Auto / Low',    desc: 'Easy on the eyes',                pts: 0, emoji: '🌙' },
+        { label: 'Medium',        desc: 'Acceptable in most conditions',   pts: 1, emoji: '🔆' },
+        { label: 'High',          desc: 'Can cause glare and strain',      pts: 2, emoji: '☀️' },
+        { label: 'Maximum always',desc: 'Significant strain risk',         pts: 3, emoji: '🔥' },
+      ]
+    },
+    {
+      id: 5,
+      category: 'Environment',
+      text: 'How often do you use screens in complete darkness or very low lighting?',
+      options: [
+        { label: 'Never',     desc: 'Good — balanced lighting is ideal',      pts: 0, emoji: '✅' },
+        { label: 'Rarely',    desc: 'Occasionally — try to avoid it',         pts: 1, emoji: '🌆' },
+        { label: 'Sometimes', desc: 'Moderate risk — eyes work much harder',  pts: 2, emoji: '🌃' },
+        { label: 'Always',    desc: 'High risk — strong contrast strains eyes', pts: 3, emoji: '🌑' },
+      ]
+    },
+  ];
+
+  // Tips pool keyed by question index and points
+  const TIPS = {
+    high_screen: {
+      icon: '⏱️',
+      title: 'Reduce Total Screen Time',
+      text: 'Try the <strong>Pomodoro technique</strong> — 25 min work, 5 min break. Aim to keep daily screen use under 6 hours where possible.'
+    },
+    breaks: {
+      icon: '👁️',
+      title: 'Start the 20-20-20 Rule',
+      text: 'Every 20 minutes, look at something <strong>20 feet away for 20 seconds</strong>. Set a phone reminder — it significantly reduces digital eye strain.'
+    },
+    symptoms: {
+      icon: '🩺',
+      title: 'Address Existing Symptoms',
+      text: 'Frequent headaches or eye fatigue after screen use is a clinical sign of <strong>Computer Vision Syndrome</strong>. See an optometrist soon.'
+    },
+    brightness: {
+      icon: '🌙',
+      title: 'Enable Night Mode & Auto Brightness',
+      text: 'Use <strong>Night Mode / Warm Display</strong> after sunset and set brightness to auto. Reduce blue light exposure, especially in evenings.'
+    },
+    dark: {
+      icon: '💡',
+      title: 'Never Use Screens in Complete Darkness',
+      text: 'The high contrast between a bright screen and dark room <strong>forces your pupils to constantly adjust</strong>, causing rapid eye fatigue. Use a dim lamp.'
+    },
+    good: {
+      icon: '🌿',
+      title: 'Keep Up the Good Habits',
+      text: 'Your screen habits are healthy. Maintain regular <strong>yearly eye checkups</strong> and stay consistent with your break routine.'
+    }
+  };
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let currentQ    = 0;
+  let answers     = new Array(QUESTIONS.length).fill(null); // stores option index
+  let totalScore  = 0;
+
+  // ── Build step dots ────────────────────────────────────────────────────────
+  function buildStepDots() {
+    const wrap = document.getElementById('step-dots');
+    wrap.innerHTML = '';
+    QUESTIONS.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'step-dot' + (i === 0 ? ' active' : '');
+      d.id = 'sdot-' + i;
+      wrap.appendChild(d);
+    });
+  }
+
+  function updateStepDots(index) {
+    QUESTIONS.forEach((_, i) => {
+      const d = document.getElementById('sdot-' + i);
+      d.className = 'step-dot';
+      if (i < index)  d.classList.add('done');
+      if (i === index) d.classList.add('active');
+    });
+  }
+
+  // ── Render question ────────────────────────────────────────────────────────
+  function renderQuestion(index, direction = 1) {
+    const q    = QUESTIONS[index];
+    const card = document.getElementById('quiz-card');
+
+    card.classList.add('slide-out');
+    setTimeout(() => {
+      // Update text
+      document.getElementById('q-number').textContent    = 'Q' + q.id;
+      document.getElementById('q-category').textContent  = q.category;
+      document.getElementById('question-text').textContent = q.text;
+
+      // Build options
+      const list = document.getElementById('options-list');
+      list.innerHTML = '';
+      q.options.forEach((opt, oi) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn' + (answers[index] === oi ? ' selected' : '');
+        btn.innerHTML = `
+          <div class="opt-radio"></div>
+          <div class="opt-content">
+            <span class="opt-label">${opt.label}</span>
+            <span class="opt-desc">${opt.desc}</span>
+          </div>
+          <span class="opt-emoji">${opt.emoji}</span>
+        `;
+        btn.addEventListener('click', () => selectOption(index, oi, btn));
+        list.appendChild(btn);
+      });
+
+      // Progress
+      const pct = Math.round((index / QUESTIONS.length) * 100);
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('progress-label').textContent = `Question ${index + 1} of ${QUESTIONS.length}`;
+      document.getElementById('progress-pct').textContent   = pct + '%';
+
+      // Score preview (show from Q2 onward)
+      const preview = document.getElementById('score-preview');
+      if (index > 0) {
+        preview.style.display = 'flex';
+        document.getElementById('score-preview-val').textContent = calcRunningScore() + ' / 15';
+      } else {
+        preview.style.display = 'none';
+      }
+
+      // Back button
+      document.getElementById('back-btn').style.visibility = index === 0 ? 'hidden' : 'visible';
+
+      // Next button state
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.textContent = index === QUESTIONS.length - 1 ? 'See Results →' : 'Next →';
+      if (answers[index] !== null) nextBtn.classList.add('active');
+      else nextBtn.classList.remove('active');
+
+      updateStepDots(index);
+
+      card.classList.remove('slide-out');
+      card.classList.add('slide-in');
+      setTimeout(() => card.classList.remove('slide-in'), 300);
+    }, 200);
+  }
+
+  // ── Select option ──────────────────────────────────────────────────────────
+  function selectOption(qIndex, optIndex, clickedBtn) {
+    answers[qIndex] = optIndex;
+    document.querySelectorAll('#options-list .option-btn').forEach(b => b.classList.remove('selected'));
+    clickedBtn.classList.add('selected');
+    document.getElementById('next-btn').classList.add('active');
+
+    // Update running score live
+    if (qIndex > 0) {
+      document.getElementById('score-preview-val').textContent = calcRunningScore() + ' / 15';
+    }
+  }
+
+  function calcRunningScore() {
+    let s = 0;
+    answers.forEach((a, i) => { if (a !== null) s += QUESTIONS[i].options[a].pts; });
+    return s;
+  }
+
+  // ── Navigation ─────────────────────────────────────────────────────────────
+  function nextQuestion() {
+    if (answers[currentQ] === null) return;
+    if (currentQ < QUESTIONS.length - 1) {
+      currentQ++;
+      renderQuestion(currentQ, 1);
+    } else {
+      showResults();
+    }
+  }
+
+  function prevQuestion() {
+    if (currentQ > 0) {
+      currentQ--;
+      renderQuestion(currentQ, -1);
+    }
+  }
+
+  // ── Results ────────────────────────────────────────────────────────────────
+  function showResults() {
+    totalScore = calcRunningScore();
+
+    document.getElementById('progress-fill').style.width  = '100%';
+    document.getElementById('progress-pct').textContent   = '100%';
+    document.getElementById('progress-label').textContent = 'Complete!';
+    document.getElementById('quiz-card').style.display    = 'none';
+    document.getElementById('step-dots').style.display    = 'none';
+
+    // Risk level
+    let level, cls, icon, heading, msg;
+    if (totalScore <= 4) {
+      level = 'Low Risk'; cls = 'status-low'; icon = '✅';
+      heading = 'Great Eye Habits!';
+      msg = 'Your screen habits are healthy. Keep maintaining good routines and get an annual eye check to stay ahead of any changes.';
+    } else if (totalScore <= 9) {
+      level = 'Medium Risk'; cls = 'status-medium'; icon = '⚠️';
+      heading = 'Some Strain Risk Detected';
+      msg = 'A few habits are putting your eyes under extra stress. Small changes to your routine can significantly reduce strain over time.';
+    } else {
+      level = 'High Risk'; cls = 'status-high'; icon = '🔴';
+      heading = 'High Eye Strain Risk';
+      msg = 'Your current screen habits are likely causing significant eye strain. We strongly recommend adjusting your routine and consulting an eye care professional.';
+    }
+
+    document.getElementById('result-icon').textContent    = icon;
+    document.getElementById('result-heading').textContent = heading;
+    document.getElementById('result-message').textContent = msg;
+    document.getElementById('result-status-badge').innerHTML =
+      `<span class="result-status ${cls}">${level}</span>`;
+
+    // Score ring animation
+    document.getElementById('ring-score').textContent = totalScore;
+    const pct    = totalScore / 15;
+    const circ   = 314;
+    // Ring color: green → amber → red
+    const ringColor = totalScore <= 4 ? '#00e5c3' : totalScore <= 9 ? '#ffc107' : '#ff6b6b';
+    const ringEl  = document.getElementById('ring-fill');
+    ringEl.style.stroke = ringColor;
+    setTimeout(() => {
+      ringEl.style.strokeDashoffset = circ - (circ * pct);
+    }, 100);
+
+    // Tips
+    buildTips(totalScore);
+
+    // Answer review
+    buildReview();
+
+    // Save to localStorage
+    localStorage.setItem('quizScore', JSON.stringify({
+      level, score: totalScore, maxScore: 15,
+      pct: Math.round((totalScore / 15) * 100),
+      answers: answers.map((a, i) => ({
+        question: QUESTIONS[i].text,
+        answer: QUESTIONS[i].options[a].label,
+        pts: QUESTIONS[i].options[a].pts,
+      }))
+    }));
+
+    document.getElementById('results-view').style.display = 'flex';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function buildTips(score) {
+    const list = document.getElementById('tips-list');
+    list.innerHTML = '';
+    const toShow = [];
+
+    // Add tips based on bad answers
+    answers.forEach((a, i) => {
+      const pts = QUESTIONS[i].options[a].pts;
+      if (i === 0 && pts >= 2) toShow.push(TIPS.high_screen);
+      if (i === 1 && pts >= 1) toShow.push(TIPS.breaks);
+      if (i === 2 && pts >= 2) toShow.push(TIPS.symptoms);
+      if (i === 3 && pts >= 2) toShow.push(TIPS.brightness);
+      if (i === 4 && pts >= 2) toShow.push(TIPS.dark);
+    });
+
+    if (toShow.length === 0) toShow.push(TIPS.good);
+
+    // Deduplicate & limit to 4
+    const seen = new Set();
+    toShow.filter(t => { if (seen.has(t.icon)) return false; seen.add(t.icon); return true; })
+          .slice(0, 4)
+          .forEach(tip => {
+            list.innerHTML += `
+              <div class="tip-item">
+                <span class="tip-icon">${tip.icon}</span>
+                <div class="tip-text"><strong>${tip.title}:</strong> ${tip.text}</div>
+              </div>`;
+          });
+  }
+
+  function buildReview() {
+    const list = document.getElementById('review-list');
+    list.innerHTML = '';
+    answers.forEach((a, i) => {
+      const opt = QUESTIONS[i].options[a];
+      list.innerHTML += `
+        <div class="review-row">
+          <span class="review-q">${QUESTIONS[i].text}</span>
+          <span class="review-a">
+            ${opt.label}
+            <span class="pts-chip pts-${opt.pts}">+${opt.pts}</span>
+          </span>
+        </div>`;
+    });
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  buildStepDots();
+  renderQuestion(0);
+</script>
+</body>
+</html>
