@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Astigmatism Test — VisionCheck</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent: #00e5c3;
+      --accent-dim: rgba(0,229,195,0.12);
+      --accent-glow: rgba(0,229,195,0.35);
+      --bg: #05080f; --bg2: #0b1120; --bg3: #111827;
+      --text: #f0f4f8; --text-dim: #8898aa;
+      --border: rgba(255,255,255,0.07); --radius: 16px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+    /* NAV */
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:18px 40px; background:rgba(5,8,15,0.85); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.25rem; color:var(--text); text-decoration:none; }
+    .logo span { color:var(--accent); }
+    .nav-links { display:flex; gap:8px; }
+    .nav-links a { color:var(--text-dim); text-decoration:none; font-size:0.875rem; padding:6px 14px; border-radius:8px; transition:all 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color:var(--accent); background:var(--accent-dim); }
+
+    /* LAYOUT */
+    .page { padding-top:100px; padding-bottom:60px; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+    /* HEADER */
+    .test-header { text-align:center; margin-bottom:40px; animation:fadeUp 0.6s ease both; }
+    .badge { display:inline-flex; align-items:center; gap:6px; background:var(--accent-dim); border:1px solid var(--accent-glow); color:var(--accent); font-size:0.75rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; padding:6px 14px; border-radius:100px; margin-bottom:18px; }
+    .test-header h1 { font-family:'Syne',sans-serif; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; letter-spacing:-1px; margin-bottom:12px; }
+    .test-header p { color:var(--text-dim); max-width:500px; margin:0 auto; line-height:1.6; }
+
+    /* PROGRESS */
+    .progress-wrap { width:100%; max-width:600px; margin-bottom:32px; }
+    .progress-info { display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-dim); margin-bottom:8px; }
+    .progress-info span:last-child { color:var(--accent); font-weight:500; }
+    .progress-bar-bg { height:4px; background:var(--bg3); border-radius:100px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:var(--accent); border-radius:100px; transition:width 0.4s; box-shadow:0 0 12px var(--accent-glow); }
+
+    /* INSTRUCTION */
+    .instruction-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px 28px; max-width:600px; width:100%; margin-bottom:24px; display:flex; align-items:flex-start; gap:14px; }
+    .instruction-icon { width:36px; height:36px; border-radius:10px; background:var(--accent-dim); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1rem; }
+    .instruction-card p { font-size:0.88rem; color:var(--text-dim); line-height:1.65; }
+    .instruction-card p strong { color:var(--text); }
+
+    /* MAIN TEST CARD */
+    .test-card { background:var(--bg2); border:1px solid var(--border); border-radius:24px; padding:36px; max-width:600px; width:100%; display:flex; flex-direction:column; align-items:center; gap:32px; animation:fadeUp 0.6s 0.15s ease both; }
+
+    /* STEP INDICATOR */
+    .step-indicator { display:flex; gap:10px; align-self:stretch; }
+    .step-dot { flex:1; height:3px; border-radius:100px; background:var(--bg3); transition:background 0.3s; }
+    .step-dot.done { background:var(--accent); }
+    .step-dot.active { background:rgba(0,229,195,0.5); }
+
+    /* CHART AREA */
+    .chart-wrap { position:relative; display:flex; flex-direction:column; align-items:center; gap:12px; }
+    .chart-label { font-size:0.78rem; color:var(--text-dim); letter-spacing:0.08em; text-transform:uppercase; }
+    #astig-canvas { display:block; cursor:default; }
+
+    /* QUESTION TEXT */
+    .question-text { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:700; text-align:center; }
+    .question-sub { font-size:0.85rem; color:var(--text-dim); text-align:center; margin-top:-20px; }
+
+    /* OPTIONS GRID */
+    .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; }
+    .option-btn {
+      background:var(--bg3); border:1px solid var(--border); border-radius:14px;
+      padding:16px 14px; cursor:pointer; transition:all 0.2s;
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      font-family:'DM Sans',sans-serif;
+    }
+    .option-btn:hover { border-color:rgba(0,229,195,0.4); background:rgba(0,229,195,0.05); }
+    .option-btn.selected { border-color:var(--accent); background:var(--accent-dim); }
+    .option-btn .opt-icon { font-size:1.4rem; }
+    .option-btn .opt-label { font-size:0.82rem; font-weight:600; color:var(--text); }
+    .option-btn .opt-desc { font-size:0.72rem; color:var(--text-dim); text-align:center; line-height:1.4; }
+
+    /* NONE OPTION */
+    .none-btn {
+      width:100%; background:transparent; border:1px dashed rgba(255,255,255,0.15);
+      border-radius:12px; padding:12px; cursor:pointer; transition:all 0.2s;
+      color:var(--text-dim); font-family:'DM Sans',sans-serif; font-size:0.85rem;
+    }
+    .none-btn:hover { border-color:rgba(255,255,255,0.3); color:var(--text); }
+    .none-btn.selected { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+
+    /* NEXT BUTTON */
+    .next-btn {
+      width:100%; background:var(--accent); border:none; border-radius:14px;
+      padding:15px; color:#000; font-family:'Syne',sans-serif; font-size:1rem;
+      font-weight:700; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;
+      opacity:0.4; pointer-events:none;
+    }
+    .next-btn.active { opacity:1; pointer-events:all; }
+    .next-btn.active:hover { transform:translateY(-2px); box-shadow:0 8px 28px var(--accent-glow); }
+
+    /* RESULTS */
+    #results-view { display:none; flex-direction:column; align-items:center; gap:24px; max-width:600px; width:100%; animation:fadeUp 0.5s ease both; }
+    .result-banner { width:100%; background:var(--bg2); border:1px solid var(--border); border-radius:24px; padding:36px; text-align:center; }
+    .result-icon { font-size:3rem; margin-bottom:16px; }
+    .result-banner h2 { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; margin-bottom:10px; }
+    .result-banner p { color:var(--text-dim); line-height:1.65; max-width:420px; margin:0 auto; }
+    .result-status { display:inline-block; padding:7px 20px; border-radius:100px; font-size:0.85rem; font-weight:600; margin:16px 0 10px; }
+    .status-none     { background:rgba(0,229,195,0.15); color:var(--accent);  border:1px solid var(--accent-glow); }
+    .status-detected { background:rgba(255,193,7,0.15);  color:#ffc107;       border:1px solid rgba(255,193,7,0.4); }
+
+    /* BREAKDOWN TABLE */
+    .breakdown { width:100%; background:var(--bg3); border-radius:16px; overflow:hidden; margin-top:20px; }
+    .breakdown-row { display:flex; align-items:center; justify-content:space-between; padding:13px 20px; border-bottom:1px solid var(--border); }
+    .breakdown-row:last-child { border-bottom:none; }
+    .breakdown-row .br-label { font-size:0.85rem; color:var(--text-dim); }
+    .breakdown-row .br-val { font-size:0.85rem; font-weight:600; color:var(--text); }
+    .br-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); margin-right:8px; display:inline-block; }
+
+    .action-row { display:flex; gap:12px; width:100%; }
+    .btn-secondary { flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:14px; color:var(--text); font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; text-decoration:none; text-align:center; transition:all 0.2s; }
+    .btn-secondary:hover { border-color:rgba(255,255,255,0.2); }
+    .btn-primary { flex:1; background:var(--accent); border:none; border-radius:12px; padding:14px; color:#000; font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; text-decoration:none; text-align:center; transition:all 0.2s; }
+    .btn-primary:hover { box-shadow:0 6px 24px var(--accent-glow); transform:translateY(-1px); }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+    @media (max-width:600px) {
+      nav { padding:14px 20px; }
+      .nav-links { display:none; }
+      .test-card { padding:24px 16px; }
+      .options-grid { grid-template-columns:1fr 1fr; gap:8px; }
+      #astig-canvas { width:240px; height:240px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Vision<span>Check</span></a>
+  <div class="nav-links">
+    <a href="acuity.html">Acuity</a>
+    <a href="color.html">Color</a>
+    <a href="astigmatism.html" class="active">Astigmatism</a>
+    <a href="quiz.html">Eye Strain</a>
+    <a href="results.html">Results</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="test-header">
+    <div class="badge">🔵 Test 3 of 4</div>
+    <h1>Astigmatism Test</h1>
+    <p>Look at the radial line chart and report which lines appear darkest or thickest to you. 2 quick rounds.</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-info">
+      <span id="progress-label">Round 1 of 2</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="instruction-card" id="instruction-card">
+    <div class="instruction-icon">🔵</div>
+    <p>Stare at the <strong>center dot</strong> of the wheel chart below. Without moving your eyes, notice if any group of lines looks <strong>darker, thicker, or bolder</strong> than the others. Select the best matching option.</p>
+  </div>
+
+  <!-- TEST CARD -->
+  <div class="test-card" id="test-card">
+
+    <div class="step-indicator">
+      <div class="step-dot active" id="step-0"></div>
+      <div class="step-dot" id="step-1"></div>
+    </div>
+
+    <div class="chart-wrap">
+      <span class="chart-label" id="chart-label">Eye 1 — Focus on the center</span>
+      <canvas id="astig-canvas" width="300" height="300"></canvas>
+    </div>
+
+    <p class="question-text">Which lines appear darkest or thickest?</p>
+    <p class="question-sub">Look at the center dot — don't scan around.</p>
+
+    <div class="options-grid" id="options-grid">
+      <button class="option-btn" data-value="horizontal" onclick="selectOption(this)">
+        <span class="opt-icon">—</span>
+        <span class="opt-label">Horizontal</span>
+        <span class="opt-desc">Left-right lines look bolder</span>
+      </button>
+      <button class="option-btn" data-value="vertical" onclick="selectOption(this)">
+        <span class="opt-icon">|</span>
+        <span class="opt-label">Vertical</span>
+        <span class="opt-desc">Up-down lines look bolder</span>
+      </button>
+      <button class="option-btn" data-value="diagonal-right" onclick="selectOption(this)">
+        <span class="opt-icon">╲</span>
+        <span class="opt-label">Diagonal ↘</span>
+        <span class="opt-desc">Top-left to bottom-right</span>
+      </button>
+      <button class="option-btn" data-value="diagonal-left" onclick="selectOption(this)">
+        <span class="opt-icon">╱</span>
+        <span class="opt-label">Diagonal ↗</span>
+        <span class="opt-desc">Bottom-left to top-right</span>
+      </button>
+    </div>
+
+    <button class="none-btn" id="none-btn" onclick="selectNone()">
+      All lines look equally dark — no difference
+    </button>
+
+    <button class="next-btn" id="next-btn" onclick="nextRound()">
+      Continue →
+    </button>
+
+  </div>
+
+  <!-- RESULTS VIEW -->
+  <div id="results-view">
+    <div class="result-banner">
+      <div class="result-icon" id="result-icon">👁️</div>
+      <h2 id="result-heading">Analysis Complete</h2>
+      <div id="result-status-badge"></div>
+      <p id="result-message"></p>
+
+      <div class="breakdown" id="breakdown">
+        <div class="breakdown-row">
+          <span class="br-label"><span class="br-dot"></span>Eye 1 Result</span>
+          <span class="br-val" id="eye1-result">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="br-label"><span class="br-dot"></span>Eye 2 Result</span>
+          <span class="br-val" id="eye2-result">—</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="br-label"><span class="br-dot"></span>Overall Assessment</span>
+          <span class="br-val" id="overall-result">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <a href="color.html" class="btn-secondary">← Retake Color</a>
+      <a href="quiz.html" class="btn-primary">Final Test →</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let currentRound = 0; // 0 = eye 1, 1 = eye 2
+  const answers = [];
+  let selectedValue = null;
+
+  const LABELS = ['Round 1 of 2 — Left Eye', 'Round 2 of 2 — Right Eye'];
+  const CHART_LABELS = ['Eye 1 — Focus on the center dot', 'Eye 2 — Focus on the center dot'];
+
+  // ── Draw radial chart ──────────────────────────────────────────────────────
+  function drawAstigChart(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    const ctx    = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W / 2, cy = H / 2;
+    const r  = W * 0.44;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Background circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 14, 0, Math.PI * 2);
+    ctx.fillStyle = '#0b1120';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Degree rings (subtle)
+    [r * 0.35, r * 0.65, r].forEach(ring => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, ring, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+    // Radial lines — 12 spokes (every 15°, pairs = 6 directions)
+    for (let angle = 0; angle < 180; angle += 15) {
+      const rad = (angle * Math.PI) / 180;
+      const x1  = cx - r * Math.cos(rad);
+      const y1  = cy - r * Math.sin(rad);
+      const x2  = cx + r * Math.cos(rad);
+      const y2  = cy + r * Math.sin(rad);
+
+      // Slightly vary line weight per angle to look like a real chart
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = '#e8edf2';
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+
+    // Degree labels
+    const DEGREE_LABELS = ['0°', '30°', '60°', '90°', '120°', '150°'];
+    ctx.font = '500 10px DM Sans, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    DEGREE_LABELS.forEach((lbl, i) => {
+      const angle = (i * 30 * Math.PI) / 180;
+      const lx = cx + (r + 26) * Math.cos(angle);
+      const ly = cy - (r + 26) * Math.sin(angle);
+      ctx.fillText(lbl, lx, ly);
+    });
+
+    // Center dot
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#00e5c3';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 9, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,229,195,0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // ── Option selection ───────────────────────────────────────────────────────
+  function selectOption(btn) {
+    // Deselect all
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('none-btn').classList.remove('selected');
+    // Select clicked
+    btn.classList.add('selected');
+    selectedValue = btn.dataset.value;
+    enableNext();
+  }
+
+  function selectNone() {
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('none-btn').classList.add('selected');
+    selectedValue = 'none';
+    enableNext();
+  }
+
+  function enableNext() {
+    document.getElementById('next-btn').classList.add('active');
+  }
+
+  // ── Round progression ──────────────────────────────────────────────────────
+  function nextRound() {
+    if (selectedValue === null) return;
+    answers.push(selectedValue);
+
+    if (currentRound === 0) {
+      // Move to round 2
+      currentRound = 1;
+      selectedValue = null;
+
+      // Update UI
+      document.getElementById('progress-label').textContent = LABELS[1];
+      document.getElementById('progress-pct').textContent   = '50%';
+      document.getElementById('progress-fill').style.width  = '50%';
+      document.getElementById('chart-label').textContent    = CHART_LABELS[1];
+      document.getElementById('step-0').classList.remove('active');
+      document.getElementById('step-0').classList.add('done');
+      document.getElementById('step-1').classList.add('active');
+
+      // Reset selections
+      document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+      document.getElementById('none-btn').classList.remove('selected');
+      document.getElementById('next-btn').classList.remove('active');
+      document.getElementById('next-btn').textContent = 'See Results →';
+
+      // Redraw (same chart, second eye)
+      drawAstigChart('astig-canvas');
+    } else {
+      // Both rounds done
+      answers.push(selectedValue);
+      showResults();
+    }
+  }
+
+  // ── Results ────────────────────────────────────────────────────────────────
+  const DIRECTION_LABELS = {
+    'horizontal':     'Horizontal Astigmatism',
+    'vertical':       'Vertical Astigmatism',
+    'diagonal-right': 'Oblique Astigmatism (↘)',
+    'diagonal-left':  'Oblique Astigmatism (↗)',
+    'none':           'Not Detected',
+  };
+
+  function showResults() {
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('progress-pct').textContent  = '100%';
+    document.getElementById('progress-label').textContent = 'Complete';
+    document.getElementById('test-card').style.display        = 'none';
+    document.getElementById('instruction-card').style.display = 'none';
+
+    const eye1 = answers[0];
+    const eye2 = answers[1];
+
+    const noAstig = eye1 === 'none' && eye2 === 'none';
+    const bothSame = eye1 === eye2 && eye1 !== 'none';
+
+    let status, cls, icon, heading, msg, overall;
+
+    if (noAstig) {
+      status = 'No Astigmatism Detected'; cls = 'status-none';
+      icon = '✅'; heading = 'Clear Vision Pattern';
+      msg = 'All lines appeared equally dark in both eyes — a good sign that astigmatism is unlikely. This is a screening only; a proper eye exam is recommended annually.';
+      overall = 'No Astigmatism Detected';
+    } else if (bothSame) {
+      status = 'Astigmatism Possible'; cls = 'status-detected';
+      icon = '⚠️'; heading = 'Consistent Pattern Detected';
+      msg = `Both eyes showed darker lines in the same direction (${DIRECTION_LABELS[eye1]}). This is consistent with astigmatism. Please consult an eye care professional for a definitive diagnosis.`;
+      overall = DIRECTION_LABELS[eye1];
+    } else if (eye1 === 'none' || eye2 === 'none') {
+      status = 'Astigmatism Possible (One Eye)'; cls = 'status-detected';
+      icon = '⚠️'; heading = 'One Eye May Be Affected';
+      msg = 'One eye showed a clear line preference while the other did not. This may indicate astigmatism in one eye. An eye specialist can confirm with a proper refraction test.';
+      overall = eye1 !== 'none' ? `Left: ${DIRECTION_LABELS[eye1]}` : `Right: ${DIRECTION_LABELS[eye2]}`;
+    } else {
+      status = 'Mixed Pattern — Astigmatism Possible'; cls = 'status-detected';
+      icon = '⚠️'; heading = 'Different Pattern in Each Eye';
+      msg = 'Each eye showed a different line preference, which can indicate astigmatism with varying axes between eyes. We recommend a full refraction test with an optometrist.';
+      overall = 'Bilateral — Different Axes';
+    }
+
+    document.getElementById('result-icon').textContent    = icon;
+    document.getElementById('result-heading').textContent = heading;
+    document.getElementById('result-message').textContent = msg;
+    document.getElementById('result-status-badge').innerHTML = `<span class="result-status ${cls}">${status}</span>`;
+    document.getElementById('eye1-result').textContent = DIRECTION_LABELS[eye1];
+    document.getElementById('eye2-result').textContent = DIRECTION_LABELS[eye2];
+    document.getElementById('overall-result').textContent = overall;
+
+    // Save to localStorage
+    localStorage.setItem('astigScore', JSON.stringify({
+      status, eye1, eye2, overall,
+      detected: !noAstig,
+    }));
+
+    document.getElementById('results-view').style.display = 'flex';
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  drawAstigChart('astig-canvas');
+  document.getElementById('progress-label').textContent = LABELS[0];
+</script>
+</body>
+</html>
