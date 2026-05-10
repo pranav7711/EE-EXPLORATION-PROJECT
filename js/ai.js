@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = 'AIzaSyAS0O31dpl12AppI43ztLZmQ9GHRbPhglk';
+const GEMINI_API_KEY = 'AIzaSyCCaOryXBfZnjBrhXh3I-rKF5f_zkl8Fd8';
 
 async function getAIAdvice() {
   const acuity = JSON.parse(localStorage.getItem('acuityScore') || 'null');
