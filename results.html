@@ -488,11 +488,12 @@ Do not recommend replacing a professional eye exam. Do not use markdown or aster
   }
 
   // ── Init ───────────────────────────────────────────────────────────────────
-  renderAIAdvice('ai-loading', 'ai-content', 'ai-error');
+renderAIAdvice('ai-loading', 'ai-content', 'ai-error');
+</script>
+
+<script src="js/ai.js"></script>
 <script type="module">
   import { autoSave } from './js/firebase.js';
-
-  // Auto-saves when results page loads
   autoSave('firebase-status');
 </script>
 </body>
