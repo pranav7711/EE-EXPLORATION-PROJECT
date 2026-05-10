@@ -24,7 +24,7 @@ Keep each tip under 2 sentences. Be specific to their results, not generic.
 Do not recommend replacing a professional eye exam. Do not use markdown or asterisks.`;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
