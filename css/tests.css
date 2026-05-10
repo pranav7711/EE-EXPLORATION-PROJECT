@@ -1,0 +1,629 @@
+/* ══════════════════════════════════════════════════════════════
+   VisionCheck — tests.css
+   Shared styles for all 4 test pages:
+   acuity.html, color.html, astigmatism.html, quiz.html
+══════════════════════════════════════════════════════════════ */
+
+/* ── TEST CARD ── */
+.test-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 36px;
+  max-width: 580px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.question-label {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  align-self: flex-start;
+}
+
+/* ── STEP DOTS ── */
+.step-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.step-dot {
+  width: 28px;
+  height: 4px;
+  border-radius: 100px;
+  background: var(--bg3);
+  transition: all 0.3s;
+}
+
+.step-dot.done   { background: var(--accent); }
+.step-dot.active { background: rgba(0,229,195,0.5); width: 40px; }
+
+/* ── STEP INDICATOR (inline inside card) ── */
+.step-indicator {
+  display: flex;
+  gap: 10px;
+  align-self: stretch;
+}
+
+.step-indicator .step-dot { flex: 1; }
+
+/* ── OPTION BUTTONS — Radio style (quiz.html) ── */
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.option-btn {
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: 'DM Sans', sans-serif;
+  text-align: left;
+  width: 100%;
+}
+
+.option-btn:hover {
+  border-color: rgba(0,229,195,0.35);
+  background: rgba(0,229,195,0.04);
+}
+
+.option-btn.selected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* Radio circle */
+.opt-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  flex-shrink: 0;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.opt-radio::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.option-btn.selected .opt-radio {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.option-btn.selected .opt-radio::after { opacity: 1; }
+
+.opt-content { flex: 1; }
+.opt-label   { font-size: 0.9rem; font-weight: 500; color: var(--text); display: block; }
+.opt-desc    { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; display: block; }
+.opt-emoji   { font-size: 1.2rem; flex-shrink: 0; }
+
+/* ── OPTION BUTTONS — Grid style (astigmatism.html) ── */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.options-grid .option-btn {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 14px;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.opt-icon  { font-size: 1.4rem; }
+.opt-label-sm { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.opt-desc-sm  { font-size: 0.72rem; color: var(--text-dim); text-align: center; line-height: 1.4; }
+
+/* ── NONE / CANT-SEE BUTTON ── */
+.none-btn,
+.cant-see-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 11px;
+  color: var(--text-dim);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.none-btn:hover,
+.cant-see-btn:hover {
+  border-color: rgba(255,255,255,0.3);
+  color: var(--text);
+  background: rgba(255,255,255,0.03);
+}
+
+.none-btn.selected,
+.cant-see-btn.selected {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-style: solid;
+}
+
+/* ── NEXT / SUBMIT BUTTONS ── */
+.next-btn,
+.submit-btn {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+
+.next-btn:hover,
+.submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px var(--accent-glow);
+}
+
+.next-btn:active,
+.submit-btn:active { transform: translateY(0); }
+
+/* Disabled state for next-btn */
+.next-btn {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.next-btn.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.next-btn.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px var(--accent-glow);
+}
+
+/* Back button */
+.back-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 22px;
+  color: var(--text-dim);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+.btn-row { display: flex; gap: 10px; width: 100%; }
+
+/* ── FEEDBACK FLASH ── */
+.feedback {
+  font-size: 0.85rem;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.3s;
+  min-height: 20px;
+  text-align: center;
+}
+
+.feedback.show   { opacity: 1; }
+.feedback.correct { color: var(--accent); }
+.feedback.wrong   { color: #ff6b6b; }
+
+/* ── TEXT INPUT (acuity.html) ── */
+.input-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-group label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.input-row { display: flex; gap: 10px; }
+
+.text-input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.text-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.text-input::placeholder {
+  color: var(--text-dim);
+  font-weight: 400;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+}
+
+/* ── SCORE PREVIEW (quiz running score) ── */
+.score-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: var(--bg3);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  width: 100%;
+}
+
+.score-preview-label { font-size: 0.78rem; color: var(--text-dim); }
+.score-preview-val   { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; color: var(--accent); margin-left: auto; }
+
+/* ── QUESTION META (quiz) ── */
+.question-meta { display: flex; align-items: center; gap: 10px; }
+
+.q-number {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-dim);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.q-category {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.question-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* ── CANVAS CHART WRAP (astigmatism) ── */
+.chart-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.chart-label {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── PLATE WRAP (color.html) ── */
+.plate-wrap {
+  width: 280px;
+  height: 280px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.plate-wrap.switching {
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+#plate-canvas {
+  border-radius: 50%;
+  display: block;
+  box-shadow: 0 0 0 4px var(--border), 0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* ── ACUITY LETTER DISPLAY ── */
+.letter-display {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.15em;
+  text-align: center;
+  transition: font-size 0.3s ease;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: var(--bg3);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+
+/* ── TEST RESULTS (shared result view at end of each test) ── */
+.result-banner {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 36px;
+  text-align: center;
+}
+
+.result-icon { font-size: 3rem; margin-bottom: 16px; }
+
+.result-banner h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.result-banner > p {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.result-status {
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+/* Status colours */
+.status-normal,
+.status-none,
+.status-low {
+  background: rgba(0,229,195,0.15);
+  color: var(--accent);
+  border: 1px solid var(--accent-glow);
+}
+
+.status-mild,
+.status-detected,
+.status-medium {
+  background: rgba(255,193,7,0.15);
+  color: var(--amber);
+  border: 1px solid rgba(255,193,7,0.4);
+}
+
+.status-significant,
+.status-high {
+  background: rgba(255,107,107,0.15);
+  color: var(--red);
+  border: 1px solid rgba(255,107,107,0.4);
+}
+
+/* Score chips row */
+.score-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.score-chip {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 20px;
+  text-align: center;
+}
+
+.score-chip .val {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+  display: block;
+}
+
+.score-chip .lbl {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+  display: block;
+}
+
+/* Breakdown table (astigmatism results) */
+.breakdown {
+  width: 100%;
+  background: var(--bg3);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-row .br-label  { font-size: 0.85rem; color: var(--text-dim); }
+.breakdown-row .br-val    { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+
+.br-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 8px;
+  display: inline-block;
+}
+
+/* ── QUIZ TIPS (end of quiz results) ── */
+.tips-card {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+}
+
+.tips-card h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--accent);
+}
+
+.tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.tip-item:last-child { border-bottom: none; }
+.tip-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.tip-text { font-size: 0.87rem; color: var(--text-dim); line-height: 1.55; }
+.tip-text strong { color: var(--text); }
+
+/* ── ANSWER REVIEW (quiz) ── */
+.review-card {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+}
+
+.review-card h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.review-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.review-row:last-child { border-bottom: none; }
+.review-q { font-size: 0.82rem; color: var(--text-dim); flex: 1; }
+.review-a { font-size: 0.82rem; font-weight: 600; color: var(--text); text-align: right; flex-shrink: 0; }
+
+.pts-chip {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-left: 8px;
+}
+
+.pts-0 { background: rgba(0,229,195,0.15);  color: var(--accent); }
+.pts-1 { background: rgba(255,193,7,0.1);   color: var(--amber); }
+.pts-2 { background: rgba(255,140,0,0.12);  color: #ff8c00; }
+.pts-3 { background: rgba(255,107,107,0.15); color: var(--red); }
+
+/* ── SCORE RING (quiz results) ── */
+.score-ring-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.ring-svg   { transform: rotate(-90deg); }
+.ring-bg    { fill: none; stroke: var(--bg3); stroke-width: 10; }
+.ring-fill  { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1); }
+
+.ring-outer {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.ring-text-wrap {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.ring-score { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; }
+.ring-max   { font-size: 0.75rem; color: var(--text-dim); }
+
+/* ── SLIDE TRANSITIONS (quiz) ── */
+.quiz-card { animation: fadeUp 0.6s 0.1s ease both; }
+.quiz-card.slide-out { animation: slideOut 0.2s ease forwards; }
+.quiz-card.slide-in  { animation: slideIn  0.3s ease forwards; }
+
+@keyframes slideOut { from { opacity:1; transform:translateX(0);    } to { opacity:0; transform:translateX(-24px); } }
+@keyframes slideIn  { from { opacity:0; transform:translateX(24px); } to { opacity:1; transform:translateX(0);    } }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .test-card    { padding: 24px 16px; }
+  .result-banner { padding: 28px 20px; }
+  .plate-wrap, #plate-canvas { width: 220px !important; height: 220px !important; }
+  .options-grid { gap: 8px; }
+  .score-row    { gap: 12px; }
+  .score-chip   { padding: 12px 14px; }
+  .btn-row      { flex-direction: column; }
+  .back-btn     { order: 2; }
+}
