@@ -34,6 +34,9 @@ Do not recommend replacing a professional eye exam. Do not use markdown or aster
     }
   );
 
+  if (response.status === 429) {
+  throw new Error('Too many requests — please wait 1 minute and try again.');
+}
   if (!response.ok) throw new Error(`Gemini API error: ${response.status}`);
 
   const data = await response.json();
