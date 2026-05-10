@@ -215,11 +215,10 @@
       <span class="score-preview-val" id="score-preview-val">0 / 15</span>
     </div>
 
-    <div class="btn-row">
-      <a href="results.html" class="btn-primary">View Full Results →</a>
-      <a href="quiz.html" class="btn-secondary">← Retake</a>
-      
-    </div>
+   <div class="btn-row">
+  <button class="back-btn" id="back-btn" onclick="prevQuestion()">← Back</button>
+  <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next →</button>
+</div>
 
   </div>
 
@@ -600,8 +599,9 @@
   }
 
   // ── Init ───────────────────────────────────────────────────────────────────
-  buildStepDots();
-  renderQuestion(0);
-</script>
-</body>
+ buildStepDots();
+      renderQuestion(0);
+    </script>
+
+  </body>
 </html>
